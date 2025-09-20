@@ -1,0 +1,23 @@
+I want to write an app for android that will show my latitude and longitude on the screen. the app
+will extend to being able to upload and share pictures, and chat with users. 
+what is the best language for android app development?
+The best language for Android app development is Kotlin. It is the preferred language recommended by Google for Android development due to its modern features, safety, and interoperability with Java. Java is also widely used and supported, but Kotlin offers more concise syntax and improved performance for many tasks. If you're starting a new project, Kotlin would be the best choice.
+can you write a simple app in kotlin that will show my latitude and longitude on the screen?
+Sure! Below is a simple example of an Android app written in Kotlin that shows your 
+latitude and   longitude on the screen. This example uses the Fused Location Provider API to get the device's location.
+the app will require a server service to upload and share pictures, and chat with users. 
+Users will be able to register with a username and password, also an email for password resets.
+the pictures will remain on the server for 30 days, and then be deleted.
+the chat will be real time, and users will be able to block other users.
+the app will also have a profile page where users can update their information and change their password.
+the app will also have a settings page where users can adjust their preferences.
+the app will also have a notifications page where users can see their notifications.
+the app will use modern design principles and will be easy to use.
+the app will also be secure and will use encryption for sensitive data.
+the app will also be optimized for performance and will use caching to reduce data usage.
+the app will also be tested thoroughly to ensure that it is free of bugs and glitches.
+the app will have a modern look and feel, and will be visually appealing.
+the app will be multi-lingual and will support multiple languages.
+the app and the server will be writen using a modern framework and coding structure.
+
+

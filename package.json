@@ -1,0 +1,23 @@
+{
+  "name": "phone-app",
+  "version": "1.0.0",
+  "description": "Phone App - Location-based Photo Sharing & Chat",
+  "scripts": {
+    "test": "./run-production-tests.sh",
+    "test:production": "./run-production-tests.sh",
+    "test:minimal": "./run-minimal-tests.sh",
+    "test:server": "./run-tests.sh --suite=server",
+    "test:auth": "./run-tests.sh --endpoint=auth",
+    "test:photos": "./run-tests.sh --endpoint=photos",
+    "test:chat": "./run-tests.sh --endpoint=chat",
+    "test:gateway": "./run-tests.sh --endpoint=gateway",
+    "test:cleanup": "cd tests && node utils/cleanup.js",
+    "test:install": "cd tests && npm install",
+    "services:start": "docker-compose up -d",
+    "services:stop": "docker-compose down",
+    "services:logs": "docker-compose logs -f"
+  },
+  "keywords": ["phone-app", "microservices", "location", "photos", "chat"],
+  "author": "Phone App Team",
+  "license": "MIT"
+}
