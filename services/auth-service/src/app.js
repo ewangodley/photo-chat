@@ -3,6 +3,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const authRoutes = require('./routes/auth');
 const apiKeyAuth = require('./middleware/apiKeyAuth');
+const { logger, requestLogger } = require('../../../shared/middleware/logger');
+const { register, metricsMiddleware } = require('../../../shared/middleware/metrics');
 
 const app = express();
 
@@ -13,8 +15,18 @@ app.use(cors({
   credentials: true
 }));
 
+// Metrics endpoint (before API key protection)
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
 // API key protection
 app.use(apiKeyAuth);
+
+// Logging and metrics
+app.use(requestLogger);
+app.use(metricsMiddleware);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -22,6 +34,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Trust proxy for rate limiting
 app.set('trust proxy', 1);
+
+
 
 // Routes
 app.use('/auth', authRoutes);

@@ -8,6 +8,7 @@ const UserTests = require('./user-tests');
 const NotificationTests = require('./notification-tests');
 const AdminTests = require('./admin-tests');
 const GatewayTests = require('./gateway-tests');
+const MonitoringTests = require('./monitoring-tests');
 
 class TestRunner {
   constructor() {
@@ -125,6 +126,13 @@ class TestRunner {
     return results;
   }
 
+  async runMonitoringTests() {
+    const monitoringTests = new MonitoringTests();
+    const results = await monitoringTests.runAllTests();
+    this.allResults.push(...results);
+    return results;
+  }
+
   async runAllTests() {
     console.log(chalk.blue.bold('🚀 Phone App Server Test Suite\n'));
     
@@ -159,9 +167,12 @@ class TestRunner {
         case 'gateway':
           await this.runGatewayTests();
           break;
+        case 'monitoring':
+          await this.runMonitoringTests();
+          break;
         default:
           console.log(chalk.red(`Unknown endpoint: ${this.args.endpoint}`));
-          console.log(chalk.yellow('Available endpoints: auth, photos, chat, users, notifications, admin, gateway'));
+          console.log(chalk.yellow('Available endpoints: auth, photos, chat, users, notifications, admin, gateway, monitoring'));
           process.exit(1);
       }
     } else {
@@ -173,6 +184,7 @@ class TestRunner {
       await this.runNotificationTests();
       await this.runAdminTests();
       await this.runGatewayTests();
+      await this.runMonitoringTests();
     }
 
     const endTime = Date.now();

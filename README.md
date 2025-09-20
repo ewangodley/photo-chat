@@ -84,6 +84,11 @@ phone_app/
 │   ├── utils/                    # Test utilities and cleanup
 │   └── fixtures/                 # Test data generators
 ├── run-tests.sh                   # Main test runner script
+├── start-all.sh                   # Complete stack startup (services + monitoring)
+├── docker-compose.monitoring.yml  # Monitoring stack (Prometheus + Grafana)
+├── monitoring/                    # Monitoring configuration
+│   ├── prometheus.yml            # Prometheus scraping config
+│   └── grafana/                  # Grafana dashboards and datasources
 ├── TEST_REQUIREMENTS.md           # 🚨 MANDATORY reading for all developers
 ├── TEST_SUITE_DOCUMENTATION.md    # Comprehensive test documentation
 ├── DEVELOPMENT_WORKFLOW.md        # Testing-first development workflow
@@ -94,13 +99,31 @@ phone_app/
 
 ### Development Environment
 ```bash
-# Start all services with Docker Compose
+# Start complete stack (services + monitoring)
+./start-all.sh
+
+# Or start services only
 docker-compose up -d
+
+# Or start monitoring only
+docker-compose -f docker-compose.monitoring.yml up -d
 
 # Or start individual services
 cd services/auth-service && npm run dev
 cd services/photo-service && npm run dev
 cd services/chat-service && npm run dev
+```
+
+### Monitoring & Observability
+```bash
+# Access monitoring dashboards
+Prometheus: http://localhost:9090
+Grafana: http://localhost:3000 (admin/admin)
+
+# View service metrics
+Auth Service: http://localhost:3001/metrics
+Photo Service: http://localhost:3002/metrics
+Gateway: http://localhost:8081/metrics
 ```
 
 ### Android App
@@ -185,7 +208,8 @@ cd services/chat-service && npm run dev
 - **Real-time**: Socket.IO
 - **Authentication**: JWT + OAuth2
 - **File Storage**: AWS S3/MinIO
-- **Monitoring**: Prometheus + Grafana
+- **Monitoring**: Prometheus + Grafana + Winston logging
+- **Metrics**: HTTP requests, duration, errors, system resources
 - **Testing**: Comprehensive test suite in `/tests/` (30+ test cases)
 
 ### Infrastructure
@@ -239,14 +263,15 @@ cd services/chat-service && npm run dev
 **Before merging any code:**
 1. Add test cases for new endpoints/features
 2. Ensure all tests pass: `npm test`
-3. Verify test cleanup works properly
-4. Update test documentation if needed
+3. Verify monitoring metrics are exposed: `curl http://localhost:3001/metrics`
+4. Verify test cleanup works properly
+5. Update test documentation if needed
 
 ## Next Steps
 
-1. **Phase 1**: Implement individual microservices + tests
-2. **Phase 2**: Set up API Gateway and service discovery + tests
+1. **Phase 1**: ✅ Implement individual microservices + tests
+2. **Phase 2**: ✅ Set up API Gateway and service discovery + tests
 3. **Phase 3**: Implement event-driven communication + tests
-4. **Phase 4**: Add monitoring and observability + tests
+4. **Phase 4**: ✅ Add monitoring and observability + tests
 5. **Phase 5**: Set up CI/CD pipelines with test automation
 6. **Phase 6**: Deploy to production environment

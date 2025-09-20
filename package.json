@@ -14,6 +14,7 @@
     "test:notifications": "./run-tests.sh --endpoint=notifications",
     "test:admin": "./run-tests.sh --endpoint=admin",
     "test:gateway": "./run-tests.sh --endpoint=gateway",
+    "test:monitoring": "./run-tests.sh --endpoint=monitoring",
     "test:cleanup": "cd tests && node utils/cleanup.js",
     "test:install": "cd tests && npm install",
     "services:start": "docker-compose up -d",
