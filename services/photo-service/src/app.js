@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const photoRoutes = require('./routes/photos');
 const apiKeyAuth = require('./middleware/apiKeyAuth');
+const photoCleanupJob = require('./jobs/photoCleanup');
 
 const app = express();
 
@@ -25,6 +26,28 @@ app.set('trust proxy', 1);
 
 // Routes
 app.use('/photos', photoRoutes);
+
+// Manual cleanup endpoint for testing
+app.post('/photos/cleanup', require('./middleware/auth').authenticateToken, async (req, res) => {
+  try {
+    await photoCleanupJob.cleanupExpiredPhotos();
+    res.json({
+      success: true,
+      message: 'Photo cleanup completed'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'CLEANUP_FAILED',
+        message: 'Photo cleanup failed'
+      }
+    });
+  }
+});
+
+// Start photo cleanup job
+photoCleanupJob.start();
 
 // Global error handler
 app.use((err, req, res, next) => {
