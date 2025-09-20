@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const connectDB = require('./config/database');
 const adminRoutes = require('./routes/admin');
 const { ipWhitelist, apiKeyAuth } = require('./middleware/security');
+const DashboardWebSocket = require('./websocket/dashboard');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(express.json({ limit: '1mb' }));
 
 // Routes
 app.use('/admin', adminRoutes);
+app.use('/admin/dashboard', require('./routes/dashboard'));
 
 // Health check (fallback)
 app.get('/health', (req, res) => {
@@ -47,5 +49,12 @@ app.use((err, req, res, next) => {
     }
   });
 });
+
+// Initialize WebSocket for real-time dashboard
+let dashboardWS;
+app.setupWebSocket = (server) => {
+  dashboardWS = new DashboardWebSocket(server);
+  app.dashboardWS = dashboardWS;
+};
 
 module.exports = app;
