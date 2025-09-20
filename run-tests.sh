@@ -73,7 +73,7 @@ check_service() {
   local name=$1
   local url=$2
   
-  if curl -s --max-time 5 "$url" > /dev/null 2>&1; then
+  if curl -s --max-time 5 -H "X-API-Key: phone-app-api-key-change-in-production" "$url" > /dev/null 2>&1; then
     echo -e "${GREEN}✅ $name - Available${NC}"
     return 0
   else

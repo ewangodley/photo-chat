@@ -20,6 +20,7 @@ class TestHelpers {
         timeout: this.config.test.timeout,
         headers: {
           'Content-Type': 'application/json',
+          'X-API-Key': process.env.API_KEY || 'phone-app-api-key-change-in-production',
           ...headers
         }
       };
@@ -93,7 +94,9 @@ class TestHelpers {
 
   getAuthHeaders(username) {
     const token = this.authTokens[username];
-    return token ? { 'Authorization': `Bearer ${token}` } : {};
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    headers['X-API-Key'] = process.env.API_KEY || 'phone-app-api-key-change-in-production';
+    return headers;
   }
 
   // Photo helpers

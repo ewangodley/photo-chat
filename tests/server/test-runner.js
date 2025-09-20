@@ -53,7 +53,12 @@ class TestRunner {
 
     for (const service of services) {
       try {
-        await axios.get(service.url, { timeout: 5000 });
+        await axios.get(service.url, { 
+          timeout: 5000,
+          headers: {
+            'X-API-Key': process.env.API_KEY || 'phone-app-api-key-change-in-production'
+          }
+        });
         console.log(chalk.green(`✅ ${service.name} - Available`));
       } catch (error) {
         console.log(chalk.red(`❌ ${service.name} - Unavailable`));

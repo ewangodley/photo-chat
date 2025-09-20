@@ -13,6 +13,10 @@ const authenticateToken = async (req, res, next) => {
     // Verify token with auth service
     const response = await axios.post(`${process.env.AUTH_SERVICE_URL}/auth/verify-token`, {
       token
+    }, {
+      headers: {
+        'X-API-Key': process.env.API_KEY
+      }
     });
 
     if (response.data.success && response.data.data.valid) {

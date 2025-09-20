@@ -88,6 +88,12 @@ Object.entries(serviceProxies).forEach(([path, config]) => {
     onProxyReq: (proxyReq, req, res) => {
       // Add request ID for tracing
       proxyReq.setHeader('X-Request-ID', require('uuid').v4());
+      // Add API key for backend services
+      if (path.includes('/admin')) {
+        proxyReq.setHeader('X-Admin-API-Key', process.env.ADMIN_API_KEY || 'admin-api-key-change-in-production');
+      } else {
+        proxyReq.setHeader('X-API-Key', process.env.API_KEY || 'phone-app-api-key-change-in-production');
+      }
     }
   }));
 });

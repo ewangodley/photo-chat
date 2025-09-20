@@ -29,7 +29,10 @@ const auth = (req, res, next) => {
 };
 
 const adminOnly = (req, res, next) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'moderator') {
+  const isAdminToken = req.user.type === 'admin';
+  const hasAdminRole = req.user.role === 'admin' || req.user.role === 'moderator';
+  
+  if (!isAdminToken && !hasAdminRole) {
     return res.status(403).json({
       success: false,
       error: {

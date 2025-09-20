@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const photoRoutes = require('./routes/photos');
+const apiKeyAuth = require('./middleware/apiKeyAuth');
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true
 }));
+
+// API key protection
+app.use(apiKeyAuth);
 
 // Body parsing middleware
 app.use(express.json({ limit: '1mb' }));

@@ -1,9 +1,11 @@
 const TestHelpers = require('../utils/test-helpers');
+const AdminHelpers = require('../utils/admin-helpers');
 const config = require('../utils/test-config');
 
 class AdminTests {
   constructor() {
     this.helpers = new TestHelpers(config);
+    this.adminHelpers = new AdminHelpers(config);
     this.testResults = [];
     this.adminUser = null;
   }
@@ -21,7 +23,15 @@ class AdminTests {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
+  getAdminHeaders(username) {
+    return {
+      ...this.helpers.getAuthHeaders(username),
+      'X-Admin-API-Key': process.env.ADMIN_API_KEY || 'admin-api-key-change-in-production'
+    };
+  }
+
   async setupAdminUser() {
+    // For now, use regular user token but mark as admin in tests
     const timestamp = Date.now();
     const userData = {
       username: 'admin_test_' + timestamp,
@@ -37,11 +47,39 @@ class AdminTests {
     await this.runTest('Admin Service Health Check', async () => {
       const response = await this.helpers.makeRequest(
         'GET',
-        'http://localhost:3006/admin/health'
+        'http://localhost:3006/admin/health',
+        null,
+        {
+          'X-Admin-API-Key': process.env.ADMIN_API_KEY || 'admin-api-key-change-in-production'
+        }
       );
       this.helpers.assertSuccess(response, 200);
       if (!response.data || response.data.service !== 'admin-service') {
         throw new Error(`Invalid service identifier: ${JSON.stringify(response.data)}`);
+      }
+    });
+  }
+
+  async testAdminLogin() {
+    await this.runTest('Admin Login', async () => {
+      const response = await this.adminHelpers.loginAdmin('admin', 'admin123');
+      if (!response.success) {
+        throw new Error('Admin login failed');
+      }
+      if (!response.data.data.token || !response.data.data.user) {
+        throw new Error('Missing token or user data in login response');
+      }
+    });
+  }
+
+  async testInvalidAdminLogin() {
+    await this.runTest('Invalid Admin Login', async () => {
+      const response = await this.adminHelpers.loginAdmin('admin', 'wrongpassword');
+      if (response.success) {
+        throw new Error('Should not succeed with wrong password');
+      }
+      if (response.status !== 401) {
+        throw new Error('Expected 401 status for invalid credentials');
       }
     });
   }
@@ -52,11 +90,10 @@ class AdminTests {
         'GET',
         'http://localhost:3006/admin/users',
         null,
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
-        // Expected for non-admin user
         this.helpers.assertError(response, 403, 'INSUFFICIENT_PERMISSIONS');
         return;
       }
@@ -75,7 +112,7 @@ class AdminTests {
         'PUT',
         'http://localhost:3006/admin/users/507f1f77bcf86cd799439011/status',
         { status: 'suspended', reason: 'Test suspension' },
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -93,7 +130,7 @@ class AdminTests {
         'GET',
         'http://localhost:3006/admin/photos',
         null,
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -115,7 +152,7 @@ class AdminTests {
         'PUT',
         'http://localhost:3006/admin/photos/507f1f77bcf86cd799439011/moderate',
         { action: 'approve', reason: 'Content approved' },
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -133,7 +170,7 @@ class AdminTests {
         'GET',
         'http://localhost:3006/admin/reports',
         null,
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -155,7 +192,7 @@ class AdminTests {
         'PUT',
         'http://localhost:3006/admin/reports/507f1f77bcf86cd799439011/resolve',
         { resolution: 'Report reviewed and resolved', action: 'no_action' },
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -176,7 +213,7 @@ class AdminTests {
         'PUT',
         'http://localhost:3006/admin/users/507f1f77bcf86cd799439011/status',
         { status: 'invalid_status', reason: 'Test' },
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -194,7 +231,7 @@ class AdminTests {
         'PUT',
         'http://localhost:3006/admin/photos/507f1f77bcf86cd799439011/moderate',
         { action: 'invalid_action', reason: 'Test' },
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -212,7 +249,7 @@ class AdminTests {
         'GET',
         'http://localhost:3006/admin/analytics',
         null,
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -234,7 +271,7 @@ class AdminTests {
         'GET',
         'http://localhost:3006/admin/logs',
         null,
-        this.helpers.getAuthHeaders(this.adminUser.username)
+        this.getAdminHeaders(this.adminUser.username)
       );
       
       if (response.status === 403) {
@@ -251,12 +288,27 @@ class AdminTests {
   }
 
   async testUnauthorizedAccess() {
-    await this.runTest('Unauthorized Admin Access', async () => {
+    await this.runTest('Unauthorized Admin Access - No API Key', async () => {
       const response = await this.helpers.makeRequest(
         'GET',
         'http://localhost:3006/admin/users'
       );
-      this.helpers.assertError(response, 401, 'TOKEN_MISSING');
+      this.helpers.assertError(response, 401, 'INVALID_API_KEY');
+    });
+  }
+
+  async testInvalidApiKey() {
+    await this.runTest('Invalid API Key Access', async () => {
+      const response = await this.helpers.makeRequest(
+        'GET',
+        'http://localhost:3006/admin/users',
+        null,
+        {
+          'X-Admin-API-Key': 'invalid-api-key',
+          'Authorization': 'Bearer fake-token'
+        }
+      );
+      this.helpers.assertError(response, 401, 'INVALID_API_KEY');
     });
   }
 
@@ -277,9 +329,11 @@ class AdminTests {
     await this.testInvalidUserStatus();
     await this.testInvalidPhotoAction();
     await this.testUnauthorizedAccess();
+    await this.testInvalidApiKey();
 
     if (config.test.cleanup) {
       await this.helpers.cleanup();
+      this.adminHelpers.clearAdminTokens();
     }
 
     return this.testResults;
