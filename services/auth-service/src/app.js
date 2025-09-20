@@ -3,8 +3,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const authRoutes = require('./routes/auth');
 const apiKeyAuth = require('./middleware/apiKeyAuth');
-const { logger, requestLogger } = require('../../../shared/middleware/logger');
-const { register, metricsMiddleware } = require('../../../shared/middleware/metrics');
+const { logger, requestLogger } = require('./middleware/logger');
+const { register, metricsMiddleware } = require('./middleware/metrics');
 
 const app = express();
 

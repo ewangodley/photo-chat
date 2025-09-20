@@ -42,6 +42,10 @@ This document outlines the implementation of a public-facing web client that int
 
 ## 🚀 **Technology Stack**
 
+> **🎨 UI/UX STANDARDS**: The user interface will be **modern, professional, and adhere to the latest design standards** including Material Design 3, Apple Human Interface Guidelines, and Web Content Accessibility Guidelines (WCAG 2.1 AA).
+>
+> **🐳 DOCKER DEPLOYMENT**: The website will be **fully containerized using Docker** with multi-stage builds for production optimization, development containers with hot reload, and complete Docker Compose integration for seamless deployment alongside the microservices backend.
+
 ### **Frontend Framework**
 - **React 18** with TypeScript
 - **Next.js 14** for SSR/SSG and routing
@@ -57,6 +61,16 @@ This document outlines the implementation of a public-facing web client that int
 - **JWT tokens** with refresh mechanism
 - **Role-based access control** (User/Admin)
 - **Protected routes** and components
+
+### **Modern UI/UX Design System**
+- **Material Design 3** principles and components
+- **Apple Human Interface Guidelines** compliance
+- **WCAG 2.1 AA** accessibility standards
+- **Modern CSS Grid & Flexbox** layouts
+- **Responsive Design** with mobile-first approach
+- **Dark/Light Mode** theme support
+- **Smooth Animations** and micro-interactions
+- **Professional Typography** with system fonts
 
 ### **Real-time Features**
 - **Socket.IO** for chat and notifications

@@ -38,10 +38,26 @@ app.set('trust proxy', 1);
 
 // Service proxy configurations
 const serviceProxies = {
+  '/auth': {
+    target: 'http://auth-service:3001',
+    changeOrigin: true
+  },
   '/api/auth': {
     target: process.env.AUTH_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: { '^/api/auth': '/auth' }
+  },
+  '/photos': {
+    target: 'http://photo-service:3002',
+    changeOrigin: true
+  },
+  '/chat': {
+    target: 'http://chat-service:3003',
+    changeOrigin: true
+  },
+  '/users': {
+    target: 'http://user-service:3004',
+    changeOrigin: true
   },
   '/api/photos': {
     target: process.env.PHOTO_SERVICE_URL,
