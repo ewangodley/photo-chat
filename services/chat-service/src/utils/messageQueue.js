@@ -1,5 +1,5 @@
 const redis = require('redis');
-const client = redis.createClient({ url: 'redis://localhost:6379' });
+const client = redis.createClient({ url: process.env.REDIS_URL || 'redis://redis:6379' });
 
 class MessageQueue {
   constructor() {

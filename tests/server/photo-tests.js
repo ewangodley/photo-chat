@@ -241,7 +241,6 @@ class PhotoTests {
 
   async testPaginationLimits() {
     await this.runTest('Photo Pagination - Limit Validation', async () => {
-      // Test with limit > 100 (should be capped)
       const response = await this.helpers.makeRequest(
         'GET',
         config.services.photos.baseUrl + config.services.photos.endpoints.nearby + 
@@ -254,6 +253,61 @@ class PhotoTests {
       const { pagination } = response.data.data;
       if (pagination.limit > 100) {
         throw new Error('Limit should be capped at 100');
+      }
+    });
+  }
+
+  async testPhotoCaption() {
+    await this.runTest('Photo Upload - With Caption', async () => {
+      const imageBuffer = await this.helpers.createTestImage();
+      const FormData = require('form-data');
+      const formData = new FormData();
+      formData.append('image', imageBuffer, 'test-caption.jpg');
+      formData.append('latitude', '37.7749');
+      formData.append('longitude', '-122.4194');
+      formData.append('caption', 'Test photo caption');
+      formData.append('isPublic', 'true');
+
+      const response = await this.helpers.makeRequest(
+        'POST',
+        config.services.photos.baseUrl + config.services.photos.endpoints.upload,
+        formData,
+        this.helpers.getAuthHeaders(this.testUser.username)
+      );
+      this.helpers.assertSuccess(response, 201);
+      
+      const { photo } = response.data.data;
+      if (photo.caption !== 'Test photo caption') {
+        throw new Error('Caption not saved correctly');
+      }
+    });
+  }
+
+  async testNearbyRadius() {
+    await this.runTest('Nearby Photos - Large Radius Validation', async () => {
+      const response = await this.helpers.makeRequest(
+        'GET',
+        config.services.photos.baseUrl + config.services.photos.endpoints.nearby + 
+        '?latitude=37.7749&longitude=-122.4194&radius=60000',
+        null,
+        this.helpers.getAuthHeaders(this.testUser.username)
+      );
+      this.helpers.assertError(response, 400, 'RADIUS_TOO_LARGE');
+    });
+  }
+
+  async testDeleteOthersPhoto() {
+    await this.runTest('Delete Photo - Forbidden Access', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await this.helpers.makeRequest(
+        'DELETE',
+        config.services.photos.baseUrl + config.services.photos.endpoints.delete + '/' + fakeId,
+        null,
+        this.helpers.getAuthHeaders(this.testUser.username)
+      );
+      // Should return 404 (not found) or 403 (forbidden)
+      if (response.status !== 404 && response.status !== 403) {
+        throw new Error('Should prevent deleting others photos');
       }
     });
   }
@@ -275,7 +329,10 @@ class PhotoTests {
     await this.testGetNearbyPhotosNoAuth();
     await this.testDeletePhoto();
     await this.testDeleteNonexistentPhoto();
+    await this.testDeleteOthersPhoto();
     await this.testPaginationLimits();
+    await this.testPhotoCaption();
+    await this.testNearbyRadius();
 
     // Cleanup
     if (config.test.cleanup) {

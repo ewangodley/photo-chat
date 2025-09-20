@@ -4,6 +4,9 @@ const chalk = require('chalk');
 const AuthTests = require('./auth-tests-optimized');
 const PhotoTests = require('./photo-tests');
 const ChatTests = require('./chat-tests');
+const UserTests = require('./user-tests');
+const NotificationTests = require('./notification-tests');
+const AdminTests = require('./admin-tests');
 const GatewayTests = require('./gateway-tests');
 
 class TestRunner {
@@ -89,6 +92,27 @@ class TestRunner {
     return results;
   }
 
+  async runUserTests() {
+    const userTests = new UserTests();
+    const results = await userTests.runAllTests();
+    this.allResults.push(...results);
+    return results;
+  }
+
+  async runNotificationTests() {
+    const notificationTests = new NotificationTests();
+    const results = await notificationTests.runAllTests();
+    this.allResults.push(...results);
+    return results;
+  }
+
+  async runAdminTests() {
+    const adminTests = new AdminTests();
+    const results = await adminTests.runAllTests();
+    this.allResults.push(...results);
+    return results;
+  }
+
   async runGatewayTests() {
     const gatewayTests = new GatewayTests();
     const results = await gatewayTests.runAllTests();
@@ -118,12 +142,21 @@ class TestRunner {
         case 'chat':
           await this.runChatTests();
           break;
+        case 'users':
+          await this.runUserTests();
+          break;
+        case 'notifications':
+          await this.runNotificationTests();
+          break;
+        case 'admin':
+          await this.runAdminTests();
+          break;
         case 'gateway':
           await this.runGatewayTests();
           break;
         default:
           console.log(chalk.red(`Unknown endpoint: ${this.args.endpoint}`));
-          console.log(chalk.yellow('Available endpoints: auth, photos, chat, gateway'));
+          console.log(chalk.yellow('Available endpoints: auth, photos, chat, users, notifications, admin, gateway'));
           process.exit(1);
       }
     } else {
@@ -131,6 +164,9 @@ class TestRunner {
       await this.runAuthTests();
       await this.runPhotoTests();
       await this.runChatTests();
+      await this.runUserTests();
+      await this.runNotificationTests();
+      await this.runAdminTests();
       await this.runGatewayTests();
     }
 

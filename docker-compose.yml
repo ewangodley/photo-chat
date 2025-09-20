@@ -62,6 +62,65 @@ services:
     networks:
       - phone-app-network
 
+  chat-service:
+    build: ./services/chat-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - MONGODB_URI=mongodb://mongo:27017/chat
+      - JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - phone-app-network
+
+  # User Service
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - MONGODB_URI=mongodb://mongo:27017/users
+      - JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+    depends_on:
+      - mongo
+    networks:
+      - phone-app-network
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - PORT=3005
+      - MONGODB_URI=mongodb://mongo:27017/notifications
+      - JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+    depends_on:
+      - mongo
+    networks:
+      - phone-app-network
+
+  admin-service:
+    build: ./services/admin-service
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=development
+      - PORT=3006
+      - MONGODB_URI=mongodb://mongo:27017/admin
+      - JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+    depends_on:
+      - mongo
+    networks:
+      - phone-app-network
+
   # MongoDB
   mongo:
     image: mongo:6

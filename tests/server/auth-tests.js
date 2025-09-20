@@ -266,10 +266,14 @@ class AuthTests {
     await this.testUserRegistrationValidation();
     await this.testDuplicateRegistration();
     await this.testUserLogin();
+    await this.testLoginEmailIdentifier();
     await this.testInvalidLogin();
     await this.testTokenVerification();
     await this.testInvalidTokenVerification();
+    await this.testMissingTokenVerification();
     await this.testTokenRefresh();
+    await this.testInvalidRefreshToken();
+    await this.testMissingRefreshToken();
     await this.testLogout();
 
     // Cleanup
@@ -278,6 +282,60 @@ class AuthTests {
     }
 
     return this.testResults;
+  }
+
+  async testInvalidRefreshToken() {
+    await this.runTest('Token Refresh - Invalid Token', async () => {
+      const response = await this.helpers.makeRequest(
+        'POST',
+        config.services.auth.baseUrl + config.services.auth.endpoints.refresh,
+        { refreshToken: 'invalid.refresh.token' }
+      );
+      this.helpers.assertError(response, 403, 'TOKEN_INVALID');
+    });
+  }
+
+  async testMissingRefreshToken() {
+    await this.runTest('Token Refresh - Missing Token', async () => {
+      const response = await this.helpers.makeRequest(
+        'POST',
+        config.services.auth.baseUrl + config.services.auth.endpoints.refresh,
+        {}
+      );
+      this.helpers.assertError(response, 401, 'TOKEN_MISSING');
+    });
+  }
+
+  async testMissingTokenVerification() {
+    await this.runTest('Token Verification - Missing Token', async () => {
+      const response = await this.helpers.makeRequest(
+        'POST',
+        config.services.auth.baseUrl + config.services.auth.endpoints.verifyToken,
+        {}
+      );
+      this.helpers.assertError(response, 400, 'TOKEN_MISSING');
+    });
+  }
+
+  async testLoginEmailIdentifier() {
+    await this.runTest('User Login - Email Identifier', async () => {
+      const timestamp = Date.now();
+      const userData = {
+        username: 'email_login_' + timestamp,
+        email: 'email_login_' + timestamp + '@example.com',
+        password: 'Password123'
+      };
+      const regResponse = await this.helpers.registerUser(userData);
+      this.helpers.assertSuccess(regResponse, 201);
+
+      const response = await this.helpers.loginUser(userData.email, userData.password);
+      this.helpers.assertSuccess(response, 200);
+
+      const { user, tokens } = response.data.data;
+      if (!user.id || !tokens.accessToken) {
+        throw new Error('Missing required fields in email login response');
+      }
+    });
   }
 }
 
