@@ -13,34 +13,60 @@ app.use(cors({
   credentials: true
 }));
 
-// Global rate limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // 1000 requests per 15 minutes per IP
-  message: {
-    success: false,
-    error: {
-      code: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many requests from this IP',
-      timestamp: new Date().toISOString()
-    }
-  }
-});
+// Disable rate limiting for debugging
+// const globalLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 1000, // 1000 requests per 15 minutes per IP
+//   message: {
+//     success: false,
+//     error: {
+//       code: 'RATE_LIMIT_EXCEEDED',
+//       message: 'Too many requests from this IP',
+//       timestamp: new Date().toISOString()
+//     }
+//   }
+// });
 
-app.use(globalLimiter);
-
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// app.use(globalLimiter);
 
 // Trust proxy
 app.set('trust proxy', 1);
+
+// API Key validation middleware
+app.use((req, res, next) => {
+  // Skip API key check for health endpoint
+  if (req.path === '/health' || req.path === '/api') {
+    return next();
+  }
+  
+  const apiKey = req.headers['x-api-key'];
+  const validApiKey = process.env.API_KEY || 'phone-app-api-key-change-in-production';
+  
+  if (!apiKey || apiKey !== validApiKey) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: 'INVALID_API_KEY',
+        message: 'Invalid or missing API key'
+      }
+    });
+  }
+  
+  console.log(`${req.method} ${req.path} - API key valid`);
+  next();
+});
+
+// Body parsing after API key validation
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Service proxy configurations
 const serviceProxies = {
   '/auth': {
     target: 'http://auth-service:3001',
-    changeOrigin: true
+    changeOrigin: true,
+    timeout: 5000,
+    proxyTimeout: 5000
   },
   '/api/auth': {
     target: process.env.AUTH_SERVICE_URL,
@@ -86,29 +112,50 @@ const serviceProxies = {
   }
 };
 
-// Create proxy middleware for each service
+// Fixed proxy with proper stream handling
+app.use('/auth', createProxyMiddleware({
+  target: 'http://auth-service:3001',
+  changeOrigin: true,
+  timeout: 10000,
+  proxyTimeout: 10000,
+  onProxyReq: (proxyReq, req, res) => {
+    // Set API key
+    proxyReq.setHeader('X-API-Key', 'phone-app-api-key-change-in-production');
+    
+    // Fix stream consumption issue for POST requests
+    if (req.body && (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH')) {
+      const bodyData = JSON.stringify(req.body);
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+      proxyReq.write(bodyData);
+    }
+  },
+  onError: (err, req, res) => {
+    console.error('Proxy error:', err.message);
+    if (!res.headersSent) {
+      res.status(503).json({ success: false, error: { message: 'Service unavailable' } });
+    }
+  }
+}));
+
+// Create proxy middleware for other services
 Object.entries(serviceProxies).forEach(([path, config]) => {
+  if (path === '/auth') return; // Skip auth, handled above
+  
   app.use(path, createProxyMiddleware({
     ...config,
+    timeout: 10000,
+    proxyTimeout: 10000,
     onError: (err, req, res) => {
       console.error(`Proxy error for ${path}:`, err.message);
-      res.status(503).json({
-        success: false,
-        error: {
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Service temporarily unavailable',
-          timestamp: new Date().toISOString()
-        }
-      });
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      // Add request ID for tracing
-      proxyReq.setHeader('X-Request-ID', require('uuid').v4());
-      // Add API key for backend services
-      if (path.includes('/admin')) {
-        proxyReq.setHeader('X-Admin-API-Key', process.env.ADMIN_API_KEY || 'admin-api-key-change-in-production');
-      } else {
-        proxyReq.setHeader('X-API-Key', process.env.API_KEY || 'phone-app-api-key-change-in-production');
+      if (!res.headersSent) {
+        res.status(503).json({
+          success: false,
+          error: {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Service temporarily unavailable',
+            timestamp: new Date().toISOString()
+          }
+        });
       }
     }
   }));

@@ -10,7 +10,7 @@ const register = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({
       $or: [{ username }, { email }]
-    });
+    }).maxTimeMS(5000);
 
     if (existingUser) {
       const field = existingUser.username === username ? 'username' : 'email';
@@ -68,14 +68,14 @@ const login = async (req, res) => {
   try {
     const { identifier, password } = req.body;
 
-    // Find user by username or email
+    // Find user by username or email with timeout
     const user = await User.findOne({
       $or: [
         { username: identifier },
         { email: identifier }
       ],
       isActive: true
-    });
+    }).maxTimeMS(5000);
 
     if (!user || !(await user.comparePassword(password))) {
       return errorResponse(res, 'INVALID_CREDENTIALS', 'Invalid username or password', null, 401);

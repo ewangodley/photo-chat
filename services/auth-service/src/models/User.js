@@ -52,7 +52,7 @@ userSchema.methods.comparePassword = async function(password) {
 userSchema.pre('save', async function(next) {
   if (!this.isModified('passwordHash')) return next();
   
-  const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+  const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 8;
   this.passwordHash = await bcrypt.hash(this.passwordHash, rounds);
   next();
 });
