@@ -5,16 +5,28 @@ interface RequestOptions extends RequestInit {
 }
 
 class ApiClient {
-  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   private apiKey = process.env.NEXT_PUBLIC_API_KEY || 'phone-app-api-key-change-in-production';
 
   private getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('access_token');
+    try {
+      return localStorage.getItem('access_token');
+    } catch {
+      return null;
+    }
   }
 
   private async refreshToken(): Promise<void> {
-    const refreshToken = localStorage.getItem('refresh_token');
+    if (typeof window === 'undefined') return;
+    
+    let refreshToken: string | null = null;
+    try {
+      refreshToken = localStorage.getItem('refresh_token');
+    } catch {
+      throw new Error('Cannot access localStorage');
+    }
+    
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -50,11 +62,20 @@ class ApiClient {
       ...options.headers
     };
 
+    console.log('API Request:', { url, headers, body: options.body });
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(url, {
         ...options,
-        headers
+        headers,
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
+      console.log('Fetch response status:', response.status);
 
       // Handle token refresh
       if (response.status === 401 && token) {
@@ -84,6 +105,7 @@ class ApiClient {
 
       return data;
     } catch (error) {
+      console.log('Fetch error:', error);
       return {
         success: false,
         error: {

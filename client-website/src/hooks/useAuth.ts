@@ -1,64 +1,53 @@
-"use client";
+import { useAuthStore } from '@/stores/authStore'
+import { authApi } from '@/lib/api/services/auth'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect } from 'react'
 
-import { useState, useEffect } from 'react';
-import { AuthManager, authApi } from '@/lib/auth/auth';
-import { User } from '@/types';
-
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export const useAuth = () => {
+  const { user, token, isAuthenticated, login: setLogin, logout: setLogout } = useAuthStore()
+  const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = () => {
-      const userData = AuthManager.getUser();
-      const isAuthenticated = AuthManager.isAuthenticated();
-      
-      if (isAuthenticated && userData) {
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
-      
-      setIsLoading(false);
-    };
+    // Client-side only initialization
+  }, [])
 
-    checkAuth();
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
+  const login = useCallback(async (email: string, password: string) => {
     try {
-      const response = await authApi.login({ email, password });
-      if (response.success) {
-        const userData = AuthManager.getUser();
-        setUser(userData);
-        return { success: true };
+      const response = await authApi.login({ email, password })
+      if (response.success && response.data) {
+        setLogin(response.data.user, response.data.tokens.accessToken)
+        return { success: true }
       }
-      return response;
-    } finally {
-      setIsLoading(false);
+      return { success: false, error: response.error?.message || 'Login failed' }
+    } catch (error) {
+      return { success: false, error: 'Network error' }
     }
-  };
+  }, [setLogin])
 
-  const logout = () => {
-    AuthManager.clearAuth();
-    setUser(null);
-  };
+  const logout = useCallback(() => {
+    setLogout()
+    router.push('/auth/login')
+  }, [setLogout, router])
 
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      AuthManager.setUser(updatedUser);
-      setUser(updatedUser);
+  const register = useCallback(async (username: string, email: string, password: string) => {
+    try {
+      const response = await authApi.register({ username, email, password })
+      if (response.success && response.data) {
+        setLogin(response.data.user, response.data.tokens.accessToken)
+        return { success: true }
+      }
+      return { success: false, error: response.error?.message || 'Registration failed' }
+    } catch (error) {
+      return { success: false, error: 'Network error' }
     }
-  };
+  }, [setLogin])
 
   return {
     user,
-    isLoading,
-    isAuthenticated: !!user,
+    token,
+    isAuthenticated,
     login,
     logout,
-    updateUser
-  };
+    register
+  }
 }

@@ -1,19 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable standalone output for Docker
   output: 'standalone',
   
-  // Image optimization
   images: {
-    domains: [
-      'localhost',
-      'minio',
-      's3.amazonaws.com'
-    ],
+    domains: ['localhost', 'minio', 's3.amazonaws.com'],
     formats: ['image/webp', 'image/avif'],
   },
 
-  // API rewrites for development
   async rewrites() {
     return [
       {
@@ -23,7 +16,6 @@ const nextConfig = {
     ];
   },
 
-  // Security headers
   async headers() {
     return [
       {
@@ -46,9 +38,15 @@ const nextConfig = {
     ];
   },
 
-  // Experimental features
-  experimental: {
-    optimizePackageImports: ['lucide-react'],
+  devIndicators: {
+    buildActivity: false,
+    appIsrStatus: false,
+  },
+
+  logging: {
+    fetches: {
+      fullUrl: false,
+    },
   },
 };
 

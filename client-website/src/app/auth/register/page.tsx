@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { authApi } from "@/lib/auth/auth";
+import { authApi } from "@/lib/api/services/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -61,39 +61,75 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      fontFamily: 'system-ui, sans-serif'
+    }}>
+      <div style={{ width: '100%', maxWidth: '28rem' }}>
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <div className="w-8 h-8 bg-primary rounded-lg"></div>
-            <span className="text-xl font-bold text-gray-900">Phone App</span>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <Link href="/" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            marginBottom: '2rem',
+            textDecoration: 'none'
+          }}>
+            <div style={{
+              width: '3rem',
+              height: '3rem',
+              background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+              borderRadius: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '1.25rem' }}>P</span>
+            </div>
+            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>Phone App</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-600 mt-2">Join our community and start sharing</p>
+          <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>Create your account</h1>
+          <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Join our community and start sharing</p>
         </div>
 
         {/* Registration Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
-            <CardDescription>
-              Create a new account to get started with Phone App
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <div style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '1rem',
+          padding: '2rem',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {error && (
-                <div className="p-3 text-sm text-error bg-error/10 border border-error/20 rounded-md">
+                <div style={{
+                  padding: '1rem',
+                  backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '0.75rem',
+                  color: 'rgb(252, 165, 165)',
+                  fontSize: '0.875rem'
+                }}>
                   {error}
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label htmlFor="username" className="text-sm font-medium text-gray-700">
-                  Username <span className="text-error">*</span>
+              <div>
+                <label htmlFor="username" style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Username <span style={{ color: 'rgb(252, 165, 165)' }}>*</span>
                 </label>
-                <Input
+                <input
                   id="username"
                   name="username"
                   type="text"
@@ -102,14 +138,32 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Choose a username"
                   disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '0.75rem',
+                    color: 'white',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s',
+                    boxSizing: 'border-box'
+                  }}
                 />
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Email Address <span className="text-error">*</span>
+              <div>
+                <label htmlFor="email" style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Email Address <span style={{ color: 'rgb(252, 165, 165)' }}>*</span>
                 </label>
-                <Input
+                <input
                   id="email"
                   name="email"
                   type="email"
@@ -118,14 +172,32 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Enter your email"
                   disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '0.75rem',
+                    color: 'white',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s',
+                    boxSizing: 'border-box'
+                  }}
                 />
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Password <span className="text-error">*</span>
+              <div>
+                <label htmlFor="password" style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Password <span style={{ color: 'rgb(252, 165, 165)' }}>*</span>
                 </label>
-                <Input
+                <input
                   id="password"
                   name="password"
                   type="password"
@@ -134,17 +206,35 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Create a password"
                   disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '0.75rem',
+                    color: 'white',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s',
+                    boxSizing: 'border-box'
+                  }}
                 />
-                <p className="text-xs text-gray-500">
+                <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                   Must be at least 6 characters long
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                  Confirm Password <span className="text-error">*</span>
+              <div>
+                <label htmlFor="confirmPassword" style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Confirm Password <span style={{ color: 'rgb(252, 165, 165)' }}>*</span>
                 </label>
-                <Input
+                <input
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
@@ -153,41 +243,74 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Confirm your password"
                   disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '0.75rem',
+                    color: 'white',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s',
+                    boxSizing: 'border-box'
+                  }}
                 />
               </div>
 
-              <Button 
+              <button 
                 type="submit" 
-                className="w-full" 
                 disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+                  color: 'white',
+                  fontWeight: '600',
+                  borderRadius: '0.75rem',
+                  border: 'none',
+                  fontSize: '1rem',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  opacity: isLoading ? 0.5 : 1,
+                  transition: 'all 0.3s'
+                }}
               >
                 {isLoading ? "Creating account..." : "Create Account"}
-              </Button>
+              </button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+              <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 Already have an account?{" "}
-                <Link href="/auth/login" className="text-primary hover:underline font-medium">
+                <Link href="/auth/login" style={{
+                  color: '#c084fc',
+                  fontWeight: '500',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s'
+                }}>
                   Sign in
                 </Link>
               </p>
             </div>
-          </CardContent>
-        </Card>
+        </div>
 
         {/* Terms */}
-        <p className="text-xs text-gray-500 text-center mt-4">
+        <p style={{
+          fontSize: '0.75rem',
+          color: 'rgba(255, 255, 255, 0.6)',
+          textAlign: 'center',
+          marginTop: '1rem'
+        }}>
           By creating an account, you agree to our{" "}
-          <Link href="/terms" className="text-primary hover:underline">
+          <Link href="/terms" style={{ color: '#c084fc', textDecoration: 'none' }}>
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-primary hover:underline">
+          <Link href="/privacy" style={{ color: '#c084fc', textDecoration: 'none' }}>
             Privacy Policy
           </Link>
         </p>
       </div>
-    </main>
+    </div>
   );
 }
