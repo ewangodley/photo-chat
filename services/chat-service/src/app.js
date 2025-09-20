@@ -5,6 +5,7 @@ const cors = require('cors');
 const connectDB = require('./config/database');
 const messageRoutes = require('./routes/messageRoutes');
 const SocketHandler = require('./websocket/socketHandler');
+const apiKeyAuth = require('./middleware/apiKey');
 
 const app = express();
 const server = http.createServer(app);
@@ -23,7 +24,7 @@ app.use(cors());
 app.use(express.json());
 
 // Health check
-app.get('/chat/health', (req, res) => {
+app.get('/chat/health', apiKeyAuth, (req, res) => {
   res.json({
     status: 'ok',
     service: 'chat-service',
@@ -34,6 +35,7 @@ app.get('/chat/health', (req, res) => {
 
 // Routes
 app.use('/chat', messageRoutes);
+app.use('/chat/rooms', require('./routes/rooms'));
 
 // WebSocket handler
 new SocketHandler(io);

@@ -12,6 +12,34 @@ class TestHelpers {
   }
 
   // HTTP Request helpers
+  async makeFormRequest(method, url, formData, headers = {}) {
+    try {
+      const response = await axios({
+        method,
+        url,
+        data: formData,
+        headers: {
+          ...formData.getHeaders(),
+          ...headers
+        },
+        validateStatus: () => true
+      });
+      
+      return {
+        success: response.status >= 200 && response.status < 300,
+        status: response.status,
+        data: response.data,
+        headers: response.headers
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        status: error.response?.status || 500
+      };
+    }
+  }
+
   async makeRequest(method, url, data = null, headers = {}) {
     try {
       const config = {

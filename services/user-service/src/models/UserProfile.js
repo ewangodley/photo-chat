@@ -17,7 +17,13 @@ const userProfileSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String, // URL to profile picture
-    default: null
+    default: null,
+    validate: {
+      validator: function(v) {
+        return !v || /^https?:\/\/.+\.(jpg|jpeg|png|gif)$/i.test(v);
+      },
+      message: 'Profile picture must be a valid image URL'
+    }
   },
   location: {
     city: String,

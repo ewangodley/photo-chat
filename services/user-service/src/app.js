@@ -23,6 +23,7 @@ app.get('/users/health', (req, res) => {
 
 // Routes
 app.use('/users', userRoutes);
+app.use('/users/profile-picture', require('./routes/profile-picture'));
 
 // Error handling
 app.use((err, req, res, next) => {
